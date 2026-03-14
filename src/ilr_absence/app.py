@@ -13,7 +13,7 @@ import streamlit as st
 
 from ilr_absence.config import CSS
 from ilr_absence.engine import ILRAbsenceEngine
-from ilr_absence.ui import render_buy_me_a_coffee, render_footer, render_faq, render_header, render_results, render_sidebar, render_trip_editor
+from ilr_absence.ui import render_buy_me_a_coffee, render_feedback, render_footer, render_faq, render_header, render_results, render_sidebar, render_trip_editor
 
 st.set_page_config(
     page_title="UK ILR Absence Calculator - Check Your Eligibility",
@@ -46,6 +46,7 @@ def main():
         st.info("👆  Add at least one trip above to see your absence analysis.")
 
     render_faq()
+    render_feedback()
     render_footer()
 
 
