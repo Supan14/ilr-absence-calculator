@@ -8,6 +8,11 @@ dist/
 # Streamlit secrets (contains Google OAuth credentials — never commit)
 .streamlit/secrets.toml
 
+# Environment variable files
+.env
+.env.*
+!.env.example
+
 # Google OAuth client secrets
 google_credentials.json
 

@@ -2,6 +2,7 @@
 Static configuration: routes, constants, and CSS.
 """
 
+import streamlit as st
 from pycountry import countries
 
 COUNTRIES: list[str] = sorted(c.name for c in countries)
@@ -23,6 +24,26 @@ ROUTES: dict[str, dict] = {
         "single_trip_limit": 180,
         "desc": "Based on 10 years' continuous lawful residence in the UK.",
     },
+}
+
+# ── Advertisement Configuration ─────────────────────────────
+# Credentials are loaded from Streamlit secrets (.streamlit/secrets.toml).
+# That file is git-ignored.  See .streamlit/secrets.toml.example for the
+# required keys.  When a key is absent (e.g. local dev without secrets),
+# ads are silently disabled so the app still runs normally.
+
+def _secret(key: str, default: str = "") -> str:
+    try:
+        return st.secrets.get(key, default)    # type: ignore[attr-defined]
+    except Exception:
+        return default
+
+AD_PUB_ID: str = _secret("ADSENSE_PUB_ID")
+
+AD_SLOTS: dict[str, str] = {
+    "header":  _secret("ADSENSE_SLOT_HEADER"),
+    "results": _secret("ADSENSE_SLOT_RESULTS"),
+    "pre_faq": _secret("ADSENSE_SLOT_PRE_FAQ"),
 }
 
 CSS: str = """

@@ -11,9 +11,9 @@ Rules implemented:
 
 import streamlit as st
 
-from ilr_absence.config import CSS
+from ilr_absence.config import AD_PUB_ID, AD_SLOTS, CSS
 from ilr_absence.engine import ILRAbsenceEngine
-from ilr_absence.ui import render_footer, render_faq, render_header, render_results, render_sidebar, render_trip_editor
+from ilr_absence.ui import render_ad_script, render_ad_unit, render_footer, render_faq, render_header, render_results, render_sidebar, render_trip_editor
 
 st.set_page_config(
     page_title="UK ILR Absence Calculator - Check Your Eligibility",
@@ -31,7 +31,9 @@ st.markdown(CSS, unsafe_allow_html=True)
 
 
 def main():
+    render_ad_script(AD_PUB_ID)
     render_header()
+    render_ad_unit(AD_PUB_ID, AD_SLOTS["header"])   # leaderboard below header
     cfg, visa_start, planned_ilr = render_sidebar()
     trips = render_trip_editor()
 
@@ -39,11 +41,13 @@ def main():
         eng = ILRAbsenceEngine(cfg, visa_start, planned_ilr, trips)
         if eng.trips:  # at least one valid trip
             render_results(eng)
+            render_ad_unit(AD_PUB_ID, AD_SLOTS["results"])  # rectangle after report
         else:
             st.warning("The trips entered have invalid dates (departure must be ≤ return).  Please correct them.")
     else:
         st.info("👆  Add at least one trip above to see your absence analysis.")
 
+    render_ad_unit(AD_PUB_ID, AD_SLOTS["pre_faq"])  # banner before FAQ
     render_faq()
     render_footer()
 

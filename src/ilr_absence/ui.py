@@ -15,6 +15,43 @@ from ilr_absence.config import COUNTRIES, REASONS, ROUTES
 from ilr_absence.engine import ILRAbsenceEngine
 
 
+# ── advertisements ───────────────────────────────────────────
+
+
+def render_ad_script(pub_id: str) -> None:
+    """Inject the AdSense verification meta tag and async loader into the page."""
+    st.markdown(
+        f"""<script>
+(function(){{
+  var m = document.createElement('meta');
+  m.name = 'google-adsense-account';
+  m.content = '{pub_id}';
+  document.head.appendChild(m);
+}})();
+</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js\
+?client={pub_id}" crossorigin="anonymous"></script>""",
+        unsafe_allow_html=True,
+    )
+
+
+def render_ad_unit(pub_id: str, slot_id: str, ad_format: str = "auto") -> None:
+    """Render a responsive Google AdSense display ad unit."""
+    st.markdown(
+        f"""
+<div style="text-align:center;margin:1.25rem 0;min-height:90px">
+  <ins class="adsbygoogle"
+       style="display:block"
+       data-ad-client="{pub_id}"
+       data-ad-slot="{slot_id}"
+       data-ad-format="{ad_format}"
+       data-full-width-responsive="true"></ins>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({{}});</script>
+</div>""",
+        unsafe_allow_html=True,
+    )
+
+
 # ── header ───────────────────────────────────────────────────
 
 
