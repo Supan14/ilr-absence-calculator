@@ -45,8 +45,6 @@ st.markdown(
   .risk-low{background:#d4edda;border-left:5px solid #28a745;padding:1rem;border-radius:8px;margin:1rem 0}
   .risk-med{background:#fff3cd;border-left:5px solid #ffc107;padding:1rem;border-radius:8px;margin:1rem 0}
   .risk-high{background:#f8d7da;border-left:5px solid #dc3545;padding:1rem;border-radius:8px;margin:1rem 0}
-  .cta-box{background:linear-gradient(135deg,#f093fb 0%,#f5576c 100%);
-           padding:2rem;border-radius:16px;text-align:center;color:#fff;margin:2rem 0}
   .footer{text-align:center;color:#999;padding:2rem 0;font-size:.85rem;
           border-top:1px solid #eee;margin-top:3rem}
   #MainMenu{visibility:hidden}
@@ -537,7 +535,6 @@ def _show_results(eng: ILRAbsenceEngine):
         _tab_yearly(eng)
 
     _export(eng, max_roll, budget, status, issues, warns)
-    _cta()
 
 
 def _tab_trips(eng: ILRAbsenceEngine):
@@ -727,24 +724,6 @@ def _export(eng: ILRAbsenceEngine, max_roll, budget, status, issues, warns):
 # ── CTA ──────────────────────────────────────────────────────
 
 
-def _cta():
-    st.markdown(
-        """
-    <div class="cta-box">
-        <h3 style="color:#fff;margin:0">🎓 Want a Professional Assessment?</h3>
-        <p style="color:rgba(255,255,255,.9);max-width:600px;margin:.75rem auto">
-            OISC-registered immigration advisers can review your case, verify your absences,
-            and prepare your ILR application with confidence.
-        </p>
-        <p style="color:rgba(255,255,255,.8);font-size:.9rem;margin-top:1rem">
-            ✓ Personalised eligibility review &nbsp;|&nbsp;
-            ✓ Document checklist &nbsp;|&nbsp;
-            ✓ Application support
-        </p>
-    </div>
-    """,
-        unsafe_allow_html=True,
-    )
 
 
 # ── FAQ (SEO-rich) ───────────────────────────────────────────
