@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+dist/
+*.egg-info/
+
+# Streamlit secrets (contains Google OAuth credentials — never commit)
+.streamlit/secrets.toml
+
+# Google OAuth client secrets
+google_credentials.json
+
+# Persisted user data
+~/.ilr_absence_data/
