@@ -1,0 +1,24 @@
+[project]
+name = "ilr-absence"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Supan Shah",email = "supan.shah@ocado.com"}
+]
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "streamlit (>=1.54.0,<2.0.0)",
+    "pandas (>=2.2.0,<3.0.0)",
+    "plotly (>=5.24.0,<6.0.0)",
+    "python-dateutil (>=2.9.0,<3.0.0)",
+    "openpyxl (>=3.1.0,<4.0.0)",
+    "pycountry (>=23.12.0,<24.0.0)",
+]
+
+[tool.poetry]
+packages = [{include = "ilr_absence", from = "src"}]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
