@@ -15,6 +15,29 @@ from ilr_absence.config import COUNTRIES, REASONS, ROUTES
 from ilr_absence.engine import ILRAbsenceEngine
 
 
+# ── Buy Me a Coffee ─────────────────────────────────────────
+
+BMC_URL = "https://buymeacoffee.com/supanshah1h"
+
+
+def render_buy_me_a_coffee() -> None:
+    st.markdown(
+        f"""
+<div style="text-align:center;margin:.75rem 0">
+  <p style="font-size:.95rem;margin-bottom:.5rem">
+    If this calculator helped you with your ILR application, please consider
+    supporting its development — it keeps the tool free and up to date. ☕
+  </p>
+  <a href="{BMC_URL}" target="_blank" rel="noopener noreferrer">
+    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
+         alt="Buy Me A Coffee"
+         style="height:45px;border-radius:8px" />
+  </a>
+</div>""",
+        unsafe_allow_html=True,
+    )
+
+
 # ── advertisements ───────────────────────────────────────────
 
 
@@ -89,10 +112,11 @@ def render_header():
             Track your UK absences, check the <strong>180-day rule</strong>, and verify your
             <strong>Indefinite Leave to Remain</strong> eligibility — instantly and privately.
         </p>
-        <div style="display:flex;justify-content:center;gap:1.5rem;margin-top:1rem;flex-wrap:wrap">
-            <span style="font-size:.85rem;color:#667eea;font-weight:600">✓ 5-year &amp; 10-year routes</span>
-            <span style="font-size:.85rem;color:#667eea;font-weight:600">✓ Rolling 12-month window</span>
-            <span style="font-size:.85rem;color:#667eea;font-weight:600">✓ No data stored</span>
+        <div style="display:flex;justify-content:center;gap:.75rem;margin-top:1rem;flex-wrap:wrap">
+            <span style="font-size:.82rem;color:#15803d;font-weight:600;background:#dcfce7;padding:.3rem .75rem;border-radius:999px;border:1px solid #bbf7d0">✓ 5-year &amp; 10-year routes</span>
+            <span style="font-size:.82rem;color:#15803d;font-weight:600;background:#dcfce7;padding:.3rem .75rem;border-radius:999px;border:1px solid #bbf7d0">✓ No data stored</span>
+            <span style="font-size:.82rem;color:#15803d;font-weight:600;background:#dcfce7;padding:.3rem .75rem;border-radius:999px;border:1px solid #bbf7d0">✓ Export &amp; re-import trips</span>
+            <span style="font-size:.82rem;color:#15803d;font-weight:600;background:#dcfce7;padding:.3rem .75rem;border-radius:999px;border:1px solid #bbf7d0">✓ Detailed reports</span>
         </div>
     </div>
     """,
@@ -587,6 +611,28 @@ def render_faq():
     st.markdown("---")
     st.markdown("## ❓  Frequently Asked Questions")
 
+    with st.expander("How do I save my trips and continue later?"):
+        st.markdown(
+            """
+This calculator stores nothing on the server — all data lives in your browser session
+only.  To save your trips and pick up where you left off:
+
+**Exporting**
+1. Add your trips as normal and run the analysis.
+2. Scroll down to **Export Your Report** and click **📋 Download Trips CSV**.
+3. Save the file somewhere safe (e.g. Google Drive, iCloud, your desktop).
+
+**Re-importing**
+1. Open the calculator again (or refresh the page).
+2. Click **📂 Import trips from a previously exported CSV** near the top of the page.
+3. Upload your saved CSV — your trips, visa start date, and planned ILR date will all
+   be restored automatically.
+
+> **Tip:** The CSV also preserves your visa start date and planned ILR date, so the
+> full configuration is restored in one step.
+"""
+        )
+
     with st.expander("What is the 180-day rule for ILR?"):
         st.markdown(
             """
@@ -663,6 +709,7 @@ specific visa type.
 
 
 def render_footer():
+    render_buy_me_a_coffee()
     st.markdown(
         """
     <div class="footer">

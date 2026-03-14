@@ -13,7 +13,7 @@ import streamlit as st
 
 from ilr_absence.config import AD_PUB_ID, AD_SLOTS, CSS
 from ilr_absence.engine import ILRAbsenceEngine
-from ilr_absence.ui import render_ad_script, render_ad_unit, render_footer, render_faq, render_header, render_results, render_sidebar, render_trip_editor
+from ilr_absence.ui import render_ad_script, render_ad_unit, render_buy_me_a_coffee, render_footer, render_faq, render_header, render_results, render_sidebar, render_trip_editor
 
 st.set_page_config(
     page_title="UK ILR Absence Calculator - Check Your Eligibility",
@@ -34,6 +34,7 @@ def main():
     render_ad_script(AD_PUB_ID)
     render_header()
     render_ad_unit(AD_PUB_ID, AD_SLOTS["header"])   # leaderboard below header
+    render_buy_me_a_coffee()
     cfg, visa_start, planned_ilr = render_sidebar()
     trips = render_trip_editor()
 
