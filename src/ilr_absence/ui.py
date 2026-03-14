@@ -38,61 +38,6 @@ def render_buy_me_a_coffee() -> None:
     )
 
 
-# ── advertisements ───────────────────────────────────────────
-
-
-def render_ad_script(pub_id: str) -> None:
-    """Inject the AdSense verification meta tag and async loader into the page.
-
-    st.markdown <script> tags are not executed by React, so we use a hidden
-    st.components iframe whose script CAN run and writes into the parent <head>.
-    """
-    if not pub_id:
-        return
-    import streamlit.components.v1 as components
-    components.html(
-        f"""<script>
-(function() {{
-  try {{
-    var pd = window.parent.document;
-    if (!pd.querySelector('meta[name="google-adsense-account"]')) {{
-      var m = pd.createElement('meta');
-      m.name = 'google-adsense-account';
-      m.content = '{pub_id}';
-      pd.head.appendChild(m);
-    }}
-    if (!pd.querySelector('script[data-adsense-loader]')) {{
-      var s = pd.createElement('script');
-      s.async = true;
-      s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={pub_id}';
-      s.setAttribute('crossorigin', 'anonymous');
-      s.setAttribute('data-adsense-loader', '1');
-      pd.head.appendChild(s);
-    }}
-  }} catch(e) {{}}
-}})();
-</script>""",
-        height=0,
-    )
-
-
-def render_ad_unit(pub_id: str, slot_id: str, ad_format: str = "auto") -> None:
-    """Render a responsive Google AdSense display ad unit."""
-    st.markdown(
-        f"""
-<div style="text-align:center;margin:1.25rem 0;min-height:90px">
-  <ins class="adsbygoogle"
-       style="display:block"
-       data-ad-client="{pub_id}"
-       data-ad-slot="{slot_id}"
-       data-ad-format="{ad_format}"
-       data-full-width-responsive="true"></ins>
-  <script>(adsbygoogle = window.adsbygoogle || []).push({{}});</script>
-</div>""",
-        unsafe_allow_html=True,
-    )
-
-
 # ── header ───────────────────────────────────────────────────
 
 
