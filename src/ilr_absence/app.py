@@ -11,7 +11,7 @@ Rules implemented:
 
 import bisect
 from datetime import date, timedelta
-from io import BytesIO
+from io import BytesIO, StringIO
 
 import pandas as pd
 import plotly.express as px
@@ -42,9 +42,12 @@ st.markdown(
   div[data-testid="stMetric"] label{color:rgba(255,255,255,.85)!important}
   div[data-testid="stMetric"] [data-testid="stMetricValue"]{color:#fff!important}
   div[data-testid="stMetric"] [data-testid="stMetricDelta"]{color:rgba(255,255,255,.9)!important}
-  .risk-low{background:#d4edda;border-left:5px solid #28a745;padding:1rem;border-radius:8px;margin:1rem 0}
-  .risk-med{background:#fff3cd;border-left:5px solid #ffc107;padding:1rem;border-radius:8px;margin:1rem 0}
-  .risk-high{background:#f8d7da;border-left:5px solid #dc3545;padding:1rem;border-radius:8px;margin:1rem 0}
+  .risk-low{background:#d4edda;border-left:5px solid #28a745;padding:1rem;border-radius:8px;margin:1rem 0;color:#155724}
+  .risk-low h4,.risk-low p{color:#155724!important}
+  .risk-med{background:#fff3cd;border-left:5px solid #ffc107;padding:1rem;border-radius:8px;margin:1rem 0;color:#856404}
+  .risk-med h4,.risk-med p{color:#856404!important}
+  .risk-high{background:#f8d7da;border-left:5px solid #dc3545;padding:1rem;border-radius:8px;margin:1rem 0;color:#721c24}
+  .risk-high h4,.risk-high p{color:#721c24!important}
   .footer{text-align:center;color:#999;padding:2rem 0;font-size:.85rem;
           border-top:1px solid #eee;margin-top:3rem}
   #MainMenu{visibility:hidden}
@@ -302,17 +305,22 @@ class ILRAbsenceEngine:
 
         # Qualifying period
         today = date.today()
+        qualifying_period_warn = False
         if today < self.earliest_ilr:
             rem = (self.earliest_ilr - today).days
             warns.append(f"📅 **Qualifying period incomplete**: {rem} days until {self.earliest_ilr:%d %b %Y}.")
+            qualifying_period_warn = True
 
-        status = "FAIL" if issues else ("CAUTION" if warns else "PASS")
+        # Only escalate to CAUTION if there are warnings beyond the qualifying period
+        non_qp_warns = [w for w in warns if not w.startswith("📅")]
+        status = "FAIL" if issues else ("CAUTION" if non_qp_warns else "PASS")
         return status, issues, warns
 
 
 # ═══════════════════════════════════════════════════════════════
 # UI Sections
 # ═══════════════════════════════════════════════════════════════
+
 
 def _header():
     st.markdown(
@@ -339,17 +347,25 @@ def _sidebar() -> tuple[dict, date, date]:
         st.caption(cfg["desc"])
         st.divider()
 
+        # Apply any values imported from CSV before widgets claim ownership of their keys
+        if "visa_start_date_pending" in st.session_state:
+            st.session_state["visa_start_date"] = st.session_state.pop("visa_start_date_pending")
+        if "planned_ilr_date_pending" in st.session_state:
+            st.session_state["planned_ilr_date"] = st.session_state.pop("planned_ilr_date_pending")
+
         c1, c2 = st.columns(2)
         with c1:
             visa_start = st.date_input(
                 "Visa Start Date",
-                value=date.today() - relativedelta(years=cfg["years"]),
+                value=st.session_state.get("visa_start_date", date.today() - relativedelta(years=cfg["years"])),
+                key="visa_start_date",
                 help="Date your current qualifying visa started",
             )
         with c2:
             planned_ilr = st.date_input(
                 "Planned ILR Date",
-                value=visa_start + relativedelta(years=cfg["years"]),
+                value=st.session_state.get("planned_ilr_date", visa_start + relativedelta(years=cfg["years"])),
+                key="planned_ilr_date",
                 help="When you plan to apply for ILR",
             )
 
@@ -377,12 +393,77 @@ def _sidebar() -> tuple[dict, date, date]:
     return cfg, visa_start, planned_ilr
 
 
+def _trips_from_csv(content: bytes) -> tuple[list[dict], date | None, date | None]:
+    """Parse a CSV produced by the export button back into trip dicts and optional visa dates."""
+    raw = content.decode("utf-8", errors="replace")
+    visa_start: date | None = None
+    planned_ilr: date | None = None
+
+    lines = raw.splitlines()
+    for line in lines:
+        if line.startswith("# visa_start,"):
+            try:
+                visa_start = pd.to_datetime(line.split(",", 1)[1].strip()).date()
+            except Exception:
+                pass
+        elif line.startswith("# planned_ilr,"):
+            try:
+                planned_ilr = pd.to_datetime(line.split(",", 1)[1].strip()).date()
+            except Exception:
+                pass
+
+    csv_body = "\n".join(l for l in lines if not l.startswith("#"))
+    df = pd.read_csv(StringIO(csv_body))
+    df.columns = [c.strip() for c in df.columns]
+    trips = []
+    for _, row in df.iterrows():
+        try:
+            dep = pd.to_datetime(row["Departure"]).date()
+            ret = pd.to_datetime(row["Return"]).date()
+        except Exception:
+            continue
+        if dep <= ret:
+            trips.append({
+                "departure": dep,
+                "return": ret,
+                "destination": str(row.get("Destination") or ""),
+                "reason": str(row.get("Reason") or ""),
+            })
+    return trips, visa_start, planned_ilr
+
+
 def _trip_editor() -> list[dict]:
     st.markdown("### ✈️  Your Trips Outside the UK")
     st.caption("Add every trip where you left the UK, including the day you departed and the day you returned.")
 
     if "trips" not in st.session_state:
         st.session_state.trips = []
+
+    # ── CSV import ───────────────────────────────────────────
+    with st.expander("📂  Import trips from a previously exported CSV"):
+        uploaded = st.file_uploader(
+            "Upload CSV",
+            type="csv",
+            label_visibility="collapsed",
+            help="Upload the CSV you downloaded from a previous session to restore your trips.",
+        )
+        if uploaded is not None:
+            file_key = f"{uploaded.name}_{uploaded.size}"
+            if st.session_state.get("_last_imported_file") != file_key:
+                imported, imported_vs, imported_pilr = _trips_from_csv(uploaded.read())
+                if imported:
+                    st.session_state["_last_imported_file"] = file_key
+                    st.session_state.trips = imported
+                    if imported_vs is not None:
+                        st.session_state["visa_start_date_pending"] = imported_vs
+                    if imported_pilr is not None:
+                        st.session_state["planned_ilr_date_pending"] = imported_pilr
+                    st.success(f"Imported {len(imported)} trip(s).")
+                    st.rerun()
+                else:
+                    st.error("No valid trips found in the file. Make sure it has Departure and Return columns.")
+            else:
+                st.success(f"{len(st.session_state.trips)} trip(s) loaded from CSV.")
 
     with st.form("add_trip", clear_on_submit=True):
         col1, col2, col3 = st.columns([2, 1, 1])
@@ -712,9 +793,10 @@ def _export(eng: ILRAbsenceEngine, max_roll, budget, status, issues, warns):
     with ec2:
         tt = eng.trip_table()
         if tt:
+            csv_metadata = f"# visa_start,{eng.visa_start}\n# planned_ilr,{eng.planned_ilr}\n"
             st.download_button(
                 "📋  Download Trips CSV",
-                data=pd.DataFrame(tt).to_csv(index=False),
+                data=csv_metadata + pd.DataFrame(tt).to_csv(index=False),
                 file_name=f"ilr_trips_{date.today()}.csv",
                 mime="text/csv",
                 width='stretch',
