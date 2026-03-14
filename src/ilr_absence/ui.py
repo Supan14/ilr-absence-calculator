@@ -19,19 +19,37 @@ from ilr_absence.engine import ILRAbsenceEngine
 
 
 def render_ad_script(pub_id: str) -> None:
-    """Inject the AdSense verification meta tag and async loader into the page."""
-    st.markdown(
+    """Inject the AdSense verification meta tag and async loader into the page.
+
+    st.markdown <script> tags are not executed by React, so we use a hidden
+    st.components iframe whose script CAN run and writes into the parent <head>.
+    """
+    if not pub_id:
+        return
+    import streamlit.components.v1 as components
+    components.html(
         f"""<script>
-(function(){{
-  var m = document.createElement('meta');
-  m.name = 'google-adsense-account';
-  m.content = '{pub_id}';
-  document.head.appendChild(m);
+(function() {{
+  try {{
+    var pd = window.parent.document;
+    if (!pd.querySelector('meta[name="google-adsense-account"]')) {{
+      var m = pd.createElement('meta');
+      m.name = 'google-adsense-account';
+      m.content = '{pub_id}';
+      pd.head.appendChild(m);
+    }}
+    if (!pd.querySelector('script[data-adsense-loader]')) {{
+      var s = pd.createElement('script');
+      s.async = true;
+      s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={pub_id}';
+      s.setAttribute('crossorigin', 'anonymous');
+      s.setAttribute('data-adsense-loader', '1');
+      pd.head.appendChild(s);
+    }}
+  }} catch(e) {{}}
 }})();
-</script>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js\
-?client={pub_id}" crossorigin="anonymous"></script>""",
-        unsafe_allow_html=True,
+</script>""",
+        height=0,
     )
 
 
